@@ -1,2 +1,2 @@
 # lua-latex2unicode
-LᴬTᴇX to Unicode Math converter
+LᴬT<sub>E</sub>X to Unicode Math converter
