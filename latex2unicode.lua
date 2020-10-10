@@ -13,13 +13,16 @@ local latex_lib = {
       return a .. '/' .. b
     end
   },
-  textrm = {
+  echo = {
     arg_num = 1,
     func = function(a) return a end
   }
 }
 
 latex_lib.dfrac = latex_lib.frac
+latex_lib.textrm = latex_lib.echo
+latex_lib.left = latex_lib.echo
+latex_lib.right = latex_lib.echo
 latex_lib.mathrm = latex_lib.textrm
 
 do
@@ -80,24 +83,27 @@ local defs = {
         if b then return a .. b .. (c or '')
         else return a end
       elseif type(a) == 'table' then
-        return b:gsub('[%z\1-\127\194-\244][\128-\191]*', function(p)
-          return a[p]
-        end) .. (c or '')
-      elseif a.arg_num then
-        if a.arg_num == 1 then
-          return a.func(b) .. (c or '')
-        elseif a.arg_num == 2 then
-          if not c then error(func_name .. ' second parameter cannot be nil') end
-          return a.func(b, c)
+        if not a.arg_num then
+          return b:gsub('[%z\1-\127\194-\244][\128-\191]*', function(p)
+            return a[p]
+          end) .. (c or '')
         else
-          error('unsupported number of arguments')
+          if a.arg_num == 1 then
+            return a.func(b) .. (c or '')
+          elseif a.arg_num == 2 then
+            if not c then error(func_name .. ' second parameter cannot be nil') end
+            return a.func(b, c)
+          else
+            error('unsupported number of arguments')
+          end
         end
+      else error('unsupported latex lib type: ' .. type(a))
       end
     elseif b then return a .. ' ' .. b .. (c and (' ' .. c) or '')
     else return a end
   end,
   subsup = function(a, b)
-    print('subsup: ', a, b)
+    --print('subsup: ', a, b)
     local dict = latex_lib[a]
     if trans_pat[a]:match(b) then
       return b:gsub('[%z\1-\127\194-\244][\128-\191]*', function(p)
@@ -116,7 +122,7 @@ local grammar = re.compile([=[--lpeg
   block       <- space / macro / escape / subscript / superscript / parameter / {[^{}]}
   space       <- '\' ([,:;! ] / 'q' 'q'? 'uad') -> ' '
   bare_macro  <- ('\' {%a+} ) -> gen_macro
-  macro       <- ('\' {%a+} (parameter parameter?)? ) -> gen_macro
+  macro       <- ('\' {%a+} (%s* parameter (%s* parameter)?)? ) -> gen_macro
   escape      <- '\' {.}
   
   subscript   <- ('_' ''->'subscripts' parameter )  -> subsup
@@ -124,4 +130,5 @@ local grammar = re.compile([=[--lpeg
   parameter   <- '{' equation '}' / bare_macro / { [^%s^\_{}] }
 ]=], defs)
 
-print(grammar:match([[\int_{\alpha}^{\beta}]]))
+print(grammar:match([[\frac{\mathrm d}{\mathrm d x} \left( k g(x) \right)
+]]))
