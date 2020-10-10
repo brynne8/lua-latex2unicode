@@ -97,8 +97,9 @@ local defs = {
     else return a end
   end,
   subsup = function(a, b)
+    print('subsup: ', a, b)
     local dict = latex_lib[a]
-    if dict:match(b) then
+    if trans_pat[a]:match(b) then
       return b:gsub('[%z\1-\127\194-\244][\128-\191]*', function(p)
         return dict[p]
       end)
@@ -123,4 +124,4 @@ local grammar = re.compile([=[--lpeg
   parameter   <- '{' equation '}' / bare_macro / { [^%s^\_{}] }
 ]=], defs)
 
-print(grammar:match([[\int y \mathrm{d}x]]))
+print(grammar:match([[\int_{\alpha}^{\beta}]]))
