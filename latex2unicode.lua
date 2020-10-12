@@ -71,7 +71,7 @@ local function walk(expr, in_parameter)
           if type(a) == 'string' then
             s = s .. a
           elseif not a.arg_num then
-            local b = expand_parameter(next_token(func))
+            local b = expand_parameter(next_token(func), true)
             s = s .. b:gsub('[%z\1-\127\194-\244][\128-\191]*', function(p)
               return a[p]
             end)
@@ -136,7 +136,7 @@ expand_parameter = function(p, in_parameter)
 end
 
 local tree = grammar:match([[
-a + 1
+\mathbb{AB}
 ]])
 print(inspect(tree))
 
