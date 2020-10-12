@@ -28,6 +28,11 @@ local latex_lib = {
       else prefix = '[' .. index .. ']√' end
       return prefix .. a
     end
+  },
+  operatorname = {
+    arg_num = 1,
+    space = true,
+    func = function(a) return a end
   }
 }
 
@@ -87,6 +92,7 @@ local operators = {
   'coth', 'csc', 'ctg', 'cth', 'deg', 'dim', 'exp',
   'hom', 'ker', 'lg', 'ln', 'log', 'sec', 'sin',
   'sinh', 'sh', 'tan', 'tanh', 'tg', 'th',
+  'det', 'gcd', 'inf', 'lim', 'max', 'min', 'Pr', 'sup'
 }
 
 for _, v in ipairs(operators) do

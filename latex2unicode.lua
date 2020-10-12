@@ -41,7 +41,7 @@ end
 
 local expand_parameter = nil
 
-local function walk(expr)
+local function walk(expr, in_parameter)
   local s = ''
   local i, v = 1, expr[i]
   
@@ -60,10 +60,10 @@ local function walk(expr)
     if type(v) == 'string' then
       if v == '_' then
         local p = next_token('_')
-        s = s .. subsup('subscripts', expand_parameter(p))
+        s = s:gsub(' $', '') .. subsup('subscripts', expand_parameter(p, true))
       elseif v == '^' then
         local p = next_token('^')
-        s = s .. subsup('superscripts', expand_parameter(p))
+        s = s:gsub(' $', '') .. subsup('superscripts', expand_parameter(p, true))
       elseif v:sub(1, 1) == '\\' then
         local func = v:sub(2)
         local a = latex_lib[func]
@@ -80,9 +80,9 @@ local function walk(expr)
             local op_arg = nil
             local j = 1
             while j <= a.arg_num do
-              local the_arg = expand_parameter(next_token(func .. '#' .. j))
+              local the_arg = expand_parameter(next_token(func .. '#' .. j), true)
               if the_arg == 'optional' then
-                op_arg = expand_parameter(next_token(func))
+                op_arg = expand_parameter(next_token(func), true)
                 j = j - 1
               else
                 arguments[j] = the_arg
@@ -98,11 +98,18 @@ local function walk(expr)
         else
           error('Unsupported macro: ' .. func)
         end
-      else
-        s = s .. v
+      else -- simple string
+        if in_parameter then
+          s = s .. v
+        else
+          local it = latex_lib.textit
+          s = s .. v:gsub('[%z\1-\127\194-\244][\128-\191]*', function(p)
+            return it[p]
+          end)
+        end
       end
     else -- table
-      s = s .. walk(v)
+      s = s .. walk(v, in_parameter)
     end
     i = i + 1
   end
@@ -111,7 +118,7 @@ end
 
 local inspect = require('inspect')
 
-expand_parameter = function(p)
+expand_parameter = function(p, in_parameter)
   --print('expand_parameter', p)
   if type(p) == 'string' then
     if #p > 1 and p:sub(1, 1) == '\\' then
@@ -124,12 +131,12 @@ expand_parameter = function(p)
       return p
     end
   else -- table
-    return walk(p)
+    return walk(p, in_parameter)
   end
 end
 
 local tree = grammar:match([[
-\mathcal H
+a + 1
 ]])
 print(inspect(tree))
 
