@@ -71,7 +71,7 @@ local function walk(expr)
           if type(a) == 'string' then
             s = s .. a
           elseif not a.arg_num then
-            local b = next_token(func)
+            local b = expand_parameter(next_token(func))
             s = s .. b:gsub('[%z\1-\127\194-\244][\128-\191]*', function(p)
               return a[p]
             end)
@@ -129,7 +129,7 @@ expand_parameter = function(p)
 end
 
 local tree = grammar:match([[
-\frac{2}{4}=0.5
+\mathcal H
 ]])
 print(inspect(tree))
 
